@@ -736,7 +736,30 @@ plot_oncoprint <- function(maf, genes = 20, annotations = NULL, numeric_bins = 5
   pp
 }
 
-#' Compatibility wrapper for the legacy integration API
+#' Visualize Host-Virus Integration Events
+#'
+#' Draw a host-virus circos plot on the current graphics device from an
+#' integration table and host chromosome-size information. This legacy wrapper
+#' delegates to \code{plot_integrations()} while preserving the original
+#' \code{visualize_viral_integration()} interface.
+#'
+#' @param input_file Path to a tab-delimited integration table.
+#' @param host Character scalar specifying a standard host genome name or a
+#'   UCSC assembly name. Common aliases such as \code{"human"} and
+#'   \code{"mouse"} are supported.
+#' @param chrom_file Optional path to a host chromosome-size table with columns
+#'   \code{chr}, \code{start}, and \code{end}. Use this when \code{host} is not
+#'   supplied or when a custom host genome is needed.
+#' @param virus_name Name of the virus sequence.
+#' @param virus_length Length of the virus sequence in base pairs.
+#' @param layout_list A list of legacy track definitions. Supported
+#'   \code{type} values are \code{"ideogram"}, \code{"scatter"},
+#'   \code{"histogram"}, and \code{"links"}.
+#' @param visual_ratio Visual proportion assigned to the virus sector.
+#' @param clear Logical. Whether to clear the existing circlize plot before
+#'   drawing.
+#' @return Invisibly returns a list with \code{cfg}, \code{gi}, and
+#'   \code{data}.
 #' @export
 visualize_viral_integration <- function(input_file,
                                         host = NULL,

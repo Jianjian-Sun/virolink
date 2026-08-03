@@ -1,66 +1,3 @@
-#' Visualize Host-Virus Integration Events
-#'
-#' Draw a host-virus circos plot on the current graphics device from an
-#' integration table and host chromosome-size information. The host genome can
-#' be supplied through a standard host name such as \code{"human"} or
-#' \code{"mouse"}, which is resolved online to a UCSC assembly and fetched as
-#' chromosome sizes, or through a custom host chromosome-size table. The virus
-#' sequence name and length are supplied explicitly. No intermediate VCF is
-#' created and no output file is opened by this function.
-#'
-#' @importFrom utils tail
-#'
-#' @param input_file Path to a tab-delimited integration table with columns
-#'   \code{chr}, \code{host_loc}, \code{viral_loc}, \code{reads},
-#'   \code{sample}, \code{viral_strand}, and \code{method}.
-#' @param host Character scalar specifying a standard host genome name or a
-#'   UCSC assembly name. Common aliases such as \code{"human"} and
-#'   \code{"mouse"} are supported.
-#' @param chrom_file Optional path to a host chromosome-size table with columns
-#'   \code{chr}, \code{start}, and \code{end}. Use this when \code{host} is not
-#'   supplied or when a custom host genome is needed. This file should contain
-#'   host chromosomes only; the virus sequence is added separately from
-#'   \code{virus_name} and \code{virus_length}.
-#' @param virus_name Name of the virus sequence.
-#' @param virus_length Length of the virus sequence in base pairs.
-#' @param layout_list A list of track definitions, for example
-#'   \code{list(list(type = "ideogram", height = 0.08), list(type = "scatter",
-#'   sample_label = "T", height = 0.15), list(type = "scatter",
-#'   sample_label = "N", height = 0.15), list(type = "links"))}.
-#'   Supported \code{type} values are \code{"ideogram"}, \code{"scatter"},
-#'   \code{"histogram"}, and \code{"links"}.
-#' @param visual_ratio Visual proportion assigned to the virus sector.
-#' @param clear Logical. Whether to clear the existing circlize plot before
-#'   drawing.
-#'
-#' @return Invisibly returns a list with \code{cfg}, \code{gi}, and
-#'   \code{data}.
-#' @export
-visualize_viral_integration <- function(input_file,
-                                        host = NULL,
-                                        chrom_file = NULL,
-                                        virus_name,
-                                        virus_length,
-                                        layout_list,
-                                        visual_ratio = 0.1,
-                                        clear = TRUE) {
-  integrations <- read_integrations(input_file)
-  tracks <- legacy_layout_to_tracks(layout_list)
-
-  plot_obj <- plot_integrations(
-    integrations = integrations,
-    host = if (!is.null(host)) host else chrom_file,
-    virus = stats::setNames(virus_length, virus_name),
-    tracks = tracks,
-    visual_ratio = visual_ratio,
-    clear = clear
-  )
-
-  gi <- create_gi_from_table(input_file = input_file, cfg = plot_obj$cfg)
-
-  invisible(list(cfg = plot_obj$cfg, gi = gi, data = plot_obj$plot_df))
-}
-
 validate_virus_info <- function(virus_name, virus_length, host_chr) {
   if (missing(virus_name) || is.null(virus_name) || length(virus_name) != 1 ||
       is.na(virus_name) || !nzchar(virus_name)) {
@@ -861,6 +798,8 @@ validate_layout_list <- function(layout_list) {
   invisible(NULL)
 }
 
+#' @importFrom utils tail
+#' @noRd
 make_axis_labels <- function(xlim, use_kb = FALSE) {
   axis_unit <- if (use_kb) "kb" else "Mb"
   axis_scale <- if (use_kb) 1000 else 1e6
