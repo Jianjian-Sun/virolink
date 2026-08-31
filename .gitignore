@@ -4,4 +4,9 @@
 docs
 task_plan.md
 .scratch/
-^R_duplicate$
+R_duplicate/
+.cursor/
+.code-review-graph/
+Rplots.pdf
+..Rcheck/
+tmp/
