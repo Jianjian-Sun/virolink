@@ -23,6 +23,7 @@ Imports:
     IRanges,
     maftools,
     rlang,
+    S4Vectors,
     stats
 Suggests:
     DT,
@@ -30,6 +31,7 @@ Suggests:
     htmltools,
     quarto,
     knitr,
+    readxl,
     testthat (>= 3.0.0)
 License: Artistic-2.0
 VignetteBuilder: quarto
