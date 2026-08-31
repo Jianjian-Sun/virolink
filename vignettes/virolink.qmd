@@ -72,7 +72,7 @@ integrations
 
 Start at the cohort level when multiple samples or groups are present. The
 cohort comparison view summarizes integration burden and can stack the total by
-another column such as method, tissue, region, or any user-defined category.
+another explicit column such as tissue, region, or any user-defined category.
 
 ```{r}
 #| label: cohort-comparison-demo
@@ -84,7 +84,6 @@ another column such as method, tissue, region, or any user-defined category.
 plot_cohort_comparison(
   integrations,
   group_by = "sample",
-  fill_by = "method",
   measure = "events"
 )
 ```
@@ -106,7 +105,7 @@ plot_integration_landscape(
   integrations,
   host = host,
   mode = "density",
-  group_by = "method",
+  group_by = "sample",
   bin_size = 5e7
 )
 ```
@@ -132,8 +131,8 @@ plot_breakpoint_map(
   host = host,
   virus = virus,
   features = hbv,
-  group_by = "method",
-  size_by = "support"
+  group_by = "sample",
+  size_by = "support_reads"
 )
 ```
 
@@ -156,8 +155,8 @@ plot_locus_context(
   pos = 62717949,
   window = 5000,
   annotations = host_features_demo,
-  group_by = "method",
-  size_by = "support"
+  group_by = "sample",
+  size_by = "support_reads"
 )
 ```
 
@@ -181,7 +180,7 @@ plot_integration_signature(
   group_by = "sample",
   cluster_by = "host_virus",
   cluster_window = 1000,
-  measure = "support",
+  measure = "support_reads",
   top_n = 8
 )
 ```
@@ -209,8 +208,8 @@ plot_integrations(
   tracks = list(
     track_ideogram(axis = "virus"),
     track_sites(
-      color = "method",
-      size = "support",
+      color = "sample",
+      size = "support_reads",
       label = "Sites"
     ),
     track_virus_genes(
@@ -221,7 +220,7 @@ plot_integrations(
     track_virus_density(
       label = "Virus density"
     ),
-    track_links(color = "method")
+    track_links(color = "sample")
   ),
   visual_ratio = 0.12
 )
@@ -252,8 +251,8 @@ plot_linear_integrations(
 
 For HTML reports, `plot_interactive_explorer()` pairs a `ggiraph` breakpoint
 map with a searchable `DT` table. Hover over points to inspect breakpoint
-details, then use the table to filter the same records by sample, method,
-coordinate, or support.
+details, then use the table to filter the same records by sample, coordinate,
+or supporting-read count.
 
 ```{r}
 #| label: interactive-demo
@@ -265,8 +264,8 @@ plot_interactive_explorer(
   host = host,
   virus = virus,
   features = hbv,
-  group_by = "method",
-  size_by = "support"
+  group_by = "sample",
+  size_by = "support_reads"
 )
 ```
 

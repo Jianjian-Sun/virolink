@@ -1,5 +1,16 @@
 # virolink 0.1.7
 
+- Added caller import helpers for converting CTAT-VIF and VirusFinder2 outputs
+  into package-standard `vi_integrations` tables.
+- Updated the development `vi_integrations` schema to use explicit host and
+  virus breakpoint sides with `support_reads` as the read-support field.
+- Removed `method` and `caller` as standardized integration-record fields;
+  user-supplied grouping metadata is preserved as ordinary extra columns and
+  must be referenced explicitly.
+- Renamed circular track color mappings from method-specific `method_col` to
+  generic `color_map`.
+- Documented that importer helpers do not infer optional metadata such as
+  `sample` from file names or paths.
 - Added a top-level `README.md` describing the package scope, input format,
   main workflow, documentation entry point, and function map.
 

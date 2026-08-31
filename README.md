@@ -2,7 +2,7 @@
 
 `virolink` is an R package for visualizing viral integration events in host
 genomes. It helps users explore where viral sequences integrate, how integration
-patterns differ across samples or methods, and how host breakpoints connect to
+patterns differ across samples or user-defined groups, and how host breakpoints connect to
 viral genomic positions.
 
 The package focuses on visualization and exploratory evidence views. It does
@@ -30,7 +30,7 @@ analysis workflow:
 
 - standardize integration records into a consistent table structure;
 - define host and virus genome coordinates explicitly;
-- summarize integration burden across samples, cohorts, or detection methods;
+- summarize integration burden across samples, cohorts, or user-defined groups;
 - survey integration events across the host genome;
 - compare host breakpoints with viral breakpoint positions;
 - inspect local host genomic context around selected integration sites;
@@ -46,20 +46,25 @@ event. The standard columns are:
 | --- | --- |
 | `host_chr` | host chromosome |
 | `host_pos` | host breakpoint position |
+| `host_strand` | host-side breakpoint strand |
+| `virus_chr` | virus sequence |
 | `virus_pos` | viral breakpoint position |
-| `sample` | sample identifier |
-| `support` | read support or another numeric evidence measure |
 | `virus_strand` | viral strand orientation |
-| `method` | detection method or evidence source |
+| `support_reads` | number of reads supporting the integration event |
+| `sample` | optional sample or group identifier |
 
-Common aliases such as `chr`, `host_loc`, `viral_loc`, and `reads` are accepted
-by the input helpers.
+Caller-specific importer functions can convert supported upstream result files
+into this standard structure. Optional metadata such as `sample` is added only
+when it is present in the input or supplied explicitly; it is not inferred from
+file names or paths. Additional user-supplied columns are preserved as ordinary
+metadata and can be used explicitly for grouping or coloring.
 
 ## Main user-facing functions
 
 | Task | Functions |
 | --- | --- |
 | Standardize records | `read_integrations()`, `as_integrations()`, `validate_integrations()` |
+| Import caller outputs | `read_caller_integrations()`, `read_ctat_vif_integrations()`, `read_virusfinder2_integrations()`, `read_virus_clip_integrations()`, `read_bsvf_integrations()` |
 | Define genomes and annotations | `host_genome()`, `virus_genome()`, `virus_features()`, `hbv_features()`, `host_features()` |
 | Compare samples or cohorts | `plot_cohort_comparison()` |
 | Survey host-genome distribution | `plot_integration_landscape()` |
