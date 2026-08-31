@@ -79,9 +79,10 @@ create_gi_from_table <- function(input_file, cfg) {
   }
 
   raw <- as.data.frame(as_integrations(input_file), stringsAsFactors = FALSE)
+  validate_integration_virus_name(raw, cfg$virus_name)
 
   host_chr <- raw$host_chr
-  virus_chr <- rep(cfg$virus_name, nrow(raw))
+  virus_chr <- raw$virus_chr
   host_pos <- as.numeric(raw$host_pos)
   virus_pos <- as.numeric(raw$virus_pos)
 
@@ -102,7 +103,8 @@ create_gi_from_table <- function(input_file, cfg) {
 
   gr_host <- GenomicRanges::GRanges(
     seqnames = host_chr,
-    ranges = IRanges::IRanges(host_pos, width = 1)
+    ranges = IRanges::IRanges(host_pos, width = 1),
+    strand = host_strand_for_plot(raw$host_strand)
   )
   gr_virus <- GenomicRanges::GRanges(
     seqnames = virus_chr,
@@ -110,17 +112,30 @@ create_gi_from_table <- function(input_file, cfg) {
     strand = raw$virus_strand
   )
 
-  suppressWarnings(
-    InteractionSet::GInteractions(
-      gr_host,
-      gr_virus,
-      mode = "strict",
-      Depth = as.numeric(raw$support),
-      Label = raw$sample,
-      Source = raw$method,
-      ViralStrand = raw$virus_strand
+  gi <- suppressWarnings(
+    InteractionSet::GInteractions(gr_host, gr_virus, mode = "strict")
+  )
+  S4Vectors::mcols(gi)$Depth <- as.numeric(raw$support_reads)
+  S4Vectors::mcols(gi)$ViralStrand <- raw$virus_strand
+
+  extra_cols <- setdiff(
+    colnames(raw),
+    c(
+      "host_chr", "host_pos", "host_strand", "virus_chr", "virus_pos",
+      "virus_strand", "support_reads"
     )
   )
+  for (col in extra_cols) {
+    S4Vectors::mcols(gi)[[col]] <- raw[[col]]
+  }
+
+  gi
+}
+
+host_strand_for_plot <- function(x) {
+  x <- normalize_integration_strand(x)
+  x[x == "*"] <- "+"
+  x
 }
 
 #' Draw Ideogram Track in Genomic Mode
@@ -194,7 +209,7 @@ draw_ideogram <- function(height, cfg, grid_col = NULL, border_col = "white",
 #' @param track_label Optional track label to draw on the virus sector.
 #' @param track_label_cex Track label text size.
 #' @param track_label_col Track label color.
-#' @param method_col Optional named vector of colors for different methods.
+#' @param color_map Optional named vector of colors for different groups.
 #' @param point_color Default point color.
 #' @param baseline_col Baseline color for the scatter track.
 #' @return Invisibly returns \code{NULL}.
@@ -202,7 +217,7 @@ draw_ideogram <- function(height, cfg, grid_col = NULL, border_col = "white",
 draw_scatter <- function(data, height, cfg, track_label = NULL,
                          track_label_cex = 0.8,
                          track_label_col = "grey30",
-                         method_col = NULL,
+                         color_map = NULL,
                          point_color = "blue", baseline_col = "grey90") {
   if (is.null(data) || nrow(data) == 0) {
     return(invisible(NULL))
@@ -214,9 +229,13 @@ draw_scatter <- function(data, height, cfg, track_label = NULL,
   }
 
   depth <- if ("Depth" %in% colnames(data)) data$Depth else rep(10, nrow(data))
-  source_col <- if ("Source" %in% colnames(data)) as.character(data$Source) else rep("integration", nrow(data))
-  col_map <- resolve_method_colors(source_col, method_col = method_col)
-  pt_col <- col_map[source_col]
+  group_col <- if (".color_group" %in% colnames(data)) {
+    as.character(data$.color_group)
+  } else {
+    rep("integration", nrow(data))
+  }
+  col_map <- resolve_group_colors(group_col, color_map = color_map)
+  pt_col <- col_map[group_col]
   pt_col[is.na(pt_col)] <- point_color
   pt_col <- grDevices::adjustcolor(pt_col, alpha.f = 0.85)
   pt_cex <- log10(depth + 1) / max_depth * 1.5 + 0.5
@@ -475,21 +494,25 @@ make_virus_histogram_data <- function(data, cfg, bins = 50) {
 #' @param cfg Plotting configuration list.
 #' @param radius Optional link radius.
 #' @param lwd Link line width.
-#' @param method_col Optional named vector of colors for different methods.
+#' @param color_map Optional named vector of colors for different groups.
 #' @param default_col Fallback link color.
 #' @return Invisibly returns \code{NULL}.
 #' @export
-draw_link <- function(link_data, cfg, radius = NULL, lwd = 0.35, method_col = NULL,
+draw_link <- function(link_data, cfg, radius = NULL, lwd = 0.35, color_map = NULL,
                       default_col = "grey") {
   if (is.null(link_data) || nrow(link_data) == 0) {
     return(invisible(NULL))
   }
 
-  source_col <- if ("Source" %in% colnames(link_data)) as.character(link_data$Source) else rep("integration", nrow(link_data))
-  col_map <- resolve_method_colors(source_col, method_col = method_col)
+  group_col <- if (".color_group" %in% colnames(link_data)) {
+    as.character(link_data$.color_group)
+  } else {
+    rep("integration", nrow(link_data))
+  }
+  col_map <- resolve_group_colors(group_col, color_map = color_map)
 
   for (i in seq_len(nrow(link_data))) {
-    link_col <- col_map[source_col[i]]
+    link_col <- col_map[group_col[i]]
     if (is.na(link_col)) {
       link_col <- default_col
     }
@@ -615,17 +638,17 @@ make_histogram_data <- function(data, cfg, bins = 50) {
   do.call(rbind, out)
 }
 
-draw_method_legend <- function(method_col) {
-  if (is.null(method_col) || length(method_col) == 0) {
+draw_group_legend <- function(color_map) {
+  if (is.null(color_map) || length(color_map) == 0) {
     return(invisible(NULL))
   }
 
   graphics::legend(
     "topright",
-    legend = names(method_col),
-    col = unname(method_col),
+    legend = names(color_map),
+    col = unname(color_map),
     pch = 19,
-    title = "Methods",
+    title = "Groups",
     bty = "n",
     cex = 0.8,
     inset = 0.02
@@ -634,23 +657,15 @@ draw_method_legend <- function(method_col) {
   invisible(NULL)
 }
 
-get_method_legend_spec <- function(layout_list, plot_df) {
+get_group_legend_spec <- function(layout_list, plot_df) {
   for (task in layout_list) {
     if (task$type %in% c("scatter", "links")) {
-      methods <- if ("Source" %in% colnames(plot_df)) as.character(plot_df$Source) else "integration"
-      return(resolve_method_colors(methods, method_col = task$method_col))
+      groups <- if (".color_group" %in% colnames(plot_df)) as.character(plot_df$.color_group) else "integration"
+      return(resolve_group_colors(groups, color_map = task$color_map))
     }
   }
 
   NULL
-}
-
-filter_plot_data <- function(plot_df, sample_label = NULL) {
-  if (is.null(sample_label)) {
-    return(plot_df)
-  }
-
-  plot_df[plot_df$Label %in% sample_label, , drop = FALSE]
 }
 
 ensure_virus_track_row <- function(df, virus_name, virus_length, defaults = list()) {
@@ -713,28 +728,24 @@ resolve_ideogram_colors <- function(cfg, grid_col = NULL) {
   grid_col
 }
 
-resolve_method_colors <- function(methods, method_col = NULL) {
-  methods <- sort(unique(as.character(methods)))
-  methods <- methods[!is.na(methods) & nzchar(methods)]
-  if (length(methods) == 0) {
-    methods <- "integration"
+resolve_group_colors <- function(groups, color_map = NULL) {
+  groups <- sort(unique(as.character(groups)))
+  groups <- groups[!is.na(groups) & nzchar(groups)]
+  if (length(groups) == 0) {
+    groups <- "integration"
   }
 
-  if (is.null(method_col)) {
-    base_col <- c(
-      Pos = "#C77C7C",
-      PB = "#7B9ACC",
-      integration = "#7FB77E"
-    )
-    method_col <- base_col[methods]
-    missing <- is.na(method_col)
+  if (is.null(color_map)) {
+    base_col <- c(integration = "#7FB77E")
+    color_map <- base_col[groups]
+    missing <- is.na(color_map)
     if (any(missing)) {
-      method_col[missing] <- grDevices::hcl.colors(sum(missing), "Dark 3")
+      color_map[missing] <- grDevices::hcl.colors(sum(missing), "Dark 3")
     }
-    return(stats::setNames(unname(method_col), methods))
+    return(stats::setNames(unname(color_map), groups))
   }
 
-  normalize_named_colors(method_col, methods)
+  normalize_named_colors(color_map, groups)
 }
 
 normalize_named_colors <- function(colors, keys) {

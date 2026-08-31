@@ -2,11 +2,13 @@ test_that("breakpoint map plots host and virus coordinates", {
   integrations <- data.frame(
     host_chr = c("1", "1", "2"),
     host_pos = c(100, 500, 200),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 30),
-    support = c(5, 10, 8),
+    support_reads = c(5, 10, 8),
     sample = c("A", "B", "A"),
     virus_strand = c("+", "-", "+"),
-    method = c("DNA", "DNA", "RNA")
+    library_type = c("DNA", "DNA", "RNA")
   )
   host <- data.frame(
     chr = c("1", "2"),
@@ -25,8 +27,8 @@ test_that("breakpoint map plots host and virus coordinates", {
     host = host,
     virus = c(HBV = 50),
     features = features,
-    group_by = "method",
-    size_by = "support"
+    group_by = "library_type",
+    size_by = "support_reads"
   )
 
   expect_s3_class(p, "ggplot")
@@ -40,11 +42,13 @@ test_that("breakpoint map accepts virus genome objects", {
   integrations <- data.frame(
     host_chr = "1",
     host_pos = 100,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
   host <- data.frame(chr = "1", start = 0, end = 1000)
   virus <- virus_genome("HBV", 50)
@@ -59,11 +63,13 @@ test_that("breakpoint map validates mapped columns", {
   integrations <- data.frame(
     host_chr = "1",
     host_pos = 100,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
   host <- data.frame(chr = "1", start = 0, end = 1000)
 
@@ -72,7 +78,7 @@ test_that("breakpoint map validates mapped columns", {
     "Unknown group_by column"
   )
   expect_error(
-    plot_breakpoint_map(integrations, host = host, virus = c(HBV = 50), size_by = "method"),
+    plot_breakpoint_map(integrations, host = host, virus = c(HBV = 50), size_by = "library_type"),
     "size_by must refer to a numeric column"
   )
 })
@@ -81,11 +87,13 @@ test_that("breakpoint map drops out-of-range coordinates", {
   integrations <- data.frame(
     host_chr = c("1", "1", "2"),
     host_pos = c(100, 1500, 200),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 80),
-    support = c(5, 10, 8),
+    support_reads = c(5, 10, 8),
     sample = c("A", "B", "C"),
     virus_strand = c("+", "-", "+"),
-    method = c("DNA", "DNA", "RNA")
+    library_type = c("DNA", "DNA", "RNA")
   )
   host <- data.frame(chr = c("1", "2"), start = c(0, 0), end = c(1000, 800))
 

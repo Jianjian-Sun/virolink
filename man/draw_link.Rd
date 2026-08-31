@@ -9,7 +9,7 @@ draw_link(
   cfg,
   radius = NULL,
   lwd = 0.35,
-  method_col = NULL,
+  color_map = NULL,
   default_col = "grey"
 )
 }
@@ -22,7 +22,7 @@ draw_link(
 
 \item{lwd}{Link line width.}
 
-\item{method_col}{Optional named vector of colors for different methods.}
+\item{color_map}{Optional named vector of colors for different groups.}
 
 \item{default_col}{Fallback link color.}
 }

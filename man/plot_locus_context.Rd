@@ -11,7 +11,7 @@ plot_locus_context(
   window = 5000,
   annotations = NULL,
   group_by = NULL,
-  size_by = "support",
+  size_by = "support_reads",
   colors = NULL,
   annotation_fill = NULL,
   point_size = 2.5,

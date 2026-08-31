@@ -6,11 +6,13 @@ test_that("interactive explorer returns an HTML component", {
   integrations <- data.frame(
     host_chr = c("1", "1", "2"),
     host_pos = c(100, 500, 200),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 30),
-    support = c(5, 10, 8),
+    support_reads = c(5, 10, 8),
     sample = c("A", "B", "A"),
     virus_strand = c("+", "-", "+"),
-    method = c("DNA", "DNA", "RNA")
+    library_type = c("DNA", "DNA", "RNA")
   )
   host <- data.frame(chr = c("1", "2"), start = c(0, 0), end = c(1000, 800))
 
@@ -18,8 +20,8 @@ test_that("interactive explorer returns an HTML component", {
     integrations,
     host = host,
     virus = c(HBV = 50),
-    group_by = "method",
-    size_by = "support"
+    group_by = "library_type",
+    size_by = "support_reads"
   )
 
   expect_s3_class(explorer, "shiny.tag.list")
@@ -34,11 +36,13 @@ test_that("interactive explorer supports selected table columns", {
   integrations <- data.frame(
     host_chr = "1",
     host_pos = 100,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
   host <- data.frame(chr = "1", start = 0, end = 1000)
 
@@ -62,11 +66,13 @@ test_that("interactive explorer validates inputs", {
   integrations <- data.frame(
     host_chr = "1",
     host_pos = 100,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
   host <- data.frame(chr = "1", start = 0, end = 1000)
 
@@ -75,7 +81,7 @@ test_that("interactive explorer validates inputs", {
     "Unknown group_by column"
   )
   expect_error(
-    plot_interactive_explorer(integrations, host = host, virus = c(HBV = 50), size_by = "method"),
+    plot_interactive_explorer(integrations, host = host, virus = c(HBV = 50), size_by = "library_type"),
     "size_by must refer to a numeric column"
   )
   expect_error(

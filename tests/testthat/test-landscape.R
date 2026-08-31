@@ -2,11 +2,13 @@ test_that("landscape plots sites and density", {
   integrations <- data.frame(
     host_chr = c("1", "1", "2"),
     host_pos = c(100, 500, 200),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 30),
-    support = c(5, 10, 8),
+    support_reads = c(5, 10, 8),
     sample = c("A", "B", "A"),
     virus_strand = c("+", "-", "+"),
-    method = c("DNA", "DNA", "RNA")
+    library_type = c("DNA", "DNA", "RNA")
   )
   host <- data.frame(
     chr = c("1", "2"),
@@ -36,11 +38,13 @@ test_that("landscape validates grouping columns", {
   integrations <- data.frame(
     host_chr = "1",
     host_pos = 100,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
   host <- data.frame(chr = "1", start = 0, end = 1000)
 

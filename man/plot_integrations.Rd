@@ -40,3 +40,8 @@ An object of class \code{vi_integration_plot}.
 \description{
 Plot virus-host integrations
 }
+\details{
+The input table must describe the same virus sequence as \code{virus}. A
+mismatch between \code{virus_chr} and the plotting virus name is treated as an
+error.
+}

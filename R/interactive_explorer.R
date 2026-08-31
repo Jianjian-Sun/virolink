@@ -27,7 +27,7 @@
 #' @export
 plot_interactive_explorer <- function(integrations, host = "hg38", virus,
                                       features = NULL, chrom_file = NULL,
-                                      group_by = "method", size_by = "support",
+                                      group_by = NULL, size_by = "support_reads",
                                       table_columns = NULL, colors = NULL,
                                       point_size = 2.8,
                                       size_range = c(2, 6),
@@ -282,21 +282,24 @@ build_interactive_breakpoint_plot <- function(plot_data, features, group_by,
 }
 
 make_integration_tooltip <- function(df, virus_name) {
-  paste0(
+  tooltip <- paste0(
     "ID: ", df$.record_id,
-    "\nSample: ", df$sample,
     "\nHost: chr", df$host_chr, ":", format(df$host_pos, scientific = FALSE, trim = TRUE),
     "\n", virus_name, ": ", format(df$virus_pos, scientific = FALSE, trim = TRUE),
-    "\nSupport: ", df$support,
-    "\nMethod: ", df$method,
+    "\nSupporting reads: ", df$support_reads,
     "\nVirus strand: ", df$virus_strand
   )
+  if ("sample" %in% colnames(df)) {
+    tooltip <- paste0(tooltip, "\nSample: ", df$sample)
+  }
+  tooltip
 }
 
 prepare_interactive_table <- function(integrations, table_columns = NULL) {
   core_cols <- c(
-    ".record_id", "sample", "method", "host_chr", "host_pos",
-    "virus_pos", "support", "virus_strand"
+    ".record_id", "sample", "host_chr", "host_pos",
+    "host_strand", "virus_chr", "virus_pos", "virus_strand",
+    "support_reads"
   )
   if (is.null(table_columns)) {
     table_columns <- intersect(core_cols, colnames(integrations))

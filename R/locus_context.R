@@ -114,7 +114,7 @@ host_features <- function(x = NULL, chr = NULL, start = NULL, end = NULL,
 #' @export
 plot_locus_context <- function(integrations, chr, pos, window = 5000,
                                annotations = NULL, group_by = NULL,
-                               size_by = "support", colors = NULL,
+                               size_by = "support_reads", colors = NULL,
                                annotation_fill = NULL, point_size = 2.5,
                                size_range = c(1.5, 5),
                                label_annotations = TRUE,

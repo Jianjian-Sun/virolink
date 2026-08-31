@@ -10,7 +10,7 @@ track_links(
   lwd = 0.35,
   default_col = "grey",
   subset = NULL,
-  method_col = NULL
+  color_map = NULL
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ track_links(
 
 \item{subset}{Optional named list of filters.}
 
-\item{method_col}{Optional named vector of colors for explicit mapping.}
+\item{color_map}{Optional named vector of colors for explicit mapping.}
 }
 \value{
 A track object for \code{plot_integrations()}.

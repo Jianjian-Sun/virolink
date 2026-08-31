@@ -128,7 +128,7 @@ plot_integration_landscape <- function(integrations, host = "hg38",
     if (is.null(group_by)) {
       p <- p + ggplot2::geom_point(
         data = plot_data,
-        mapping = ggplot2::aes(x = .data$genome_pos, y = .data$support),
+        mapping = ggplot2::aes(x = .data$genome_pos, y = .data$support_reads),
         size = point_size, alpha = 0.8, color = "#0072B2", na.rm = TRUE
       )
     } else {
@@ -136,7 +136,7 @@ plot_integration_landscape <- function(integrations, host = "hg38",
         data = plot_data,
         mapping = ggplot2::aes(
           x = .data$genome_pos,
-          y = .data$support,
+          y = .data$support_reads,
           color = .data[[group_by]]
         ),
         size = point_size, alpha = 0.8, na.rm = TRUE

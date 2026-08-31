@@ -7,10 +7,10 @@
 plot_integration_signature(
   integrations,
   mode = c("clonality", "strand"),
-  group_by = "sample",
+  group_by = NULL,
   cluster_by = c("host", "host_virus"),
   cluster_window = 1000,
-  measure = c("support", "events"),
+  measure = c("support_reads", "events"),
   top_n = 10,
   colors = NULL
 )
@@ -32,7 +32,7 @@ breakpoints.}
 breakpoints.}
 
 \item{measure}{Quantity to summarize: number of integration events
-(\code{"events"}) or total supporting reads (\code{"support"}).}
+(\code{"events"}) or total supporting reads (\code{"support_reads"}).}
 
 \item{top_n}{Number of candidate clusters shown in \code{mode = "clonality"}.}
 

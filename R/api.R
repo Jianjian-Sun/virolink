@@ -3,6 +3,10 @@
 #' @param path Path to a tabular file containing integration records.
 #' @param sep Field separator. Defaults to tab.
 #' @return A \code{vi_integrations} object.
+#' @details The table must contain the exact standard columns `host_chr`,
+#'   `host_pos`, `host_strand`, `virus_chr`, `virus_pos`, `virus_strand`, and
+#'   `support_reads`. `sample` and other metadata columns are optional and are
+#'   preserved when supplied.
 #' @export
 read_integrations <- function(path, sep = "\t") {
   if (!file.exists(path)) {
@@ -45,28 +49,17 @@ as_integrations <- function(x) {
 #'
 #' @param x Integration records.
 #' @return A standardized \code{vi_integrations} object.
+#' @details The required columns are `host_chr`, `host_pos`, `host_strand`,
+#'   `virus_chr`, `virus_pos`, `virus_strand`, and `support_reads`. Legacy
+#'   alias-only inputs are not accepted by this development schema.
 #' @export
 validate_integrations <- function(x) {
   df <- as.data.frame(x, stringsAsFactors = FALSE)
 
-  rename_one <- function(target, candidates) {
-    hit <- intersect(candidates, colnames(df))
-    if (length(hit) == 0) {
-      return(NULL)
-    }
-    df[[target]] <<- df[[hit[1]]]
-    invisible(NULL)
-  }
-
-  rename_one("host_chr", c("host_chr", "chr"))
-  rename_one("host_pos", c("host_pos", "host_loc"))
-  rename_one("virus_pos", c("virus_pos", "viral_loc"))
-  rename_one("sample", c("sample", "Tumor_Sample_Barcode"))
-  rename_one("support", c("support", "reads"))
-  rename_one("virus_strand", c("virus_strand", "viral_strand"))
-  rename_one("method", c("method"))
-
-  required_cols <- c("host_chr", "host_pos", "virus_pos", "sample", "support", "virus_strand", "method")
+  required_cols <- c(
+    "host_chr", "host_pos", "host_strand", "virus_chr", "virus_pos",
+    "virus_strand", "support_reads"
+  )
   missing_cols <- setdiff(required_cols, colnames(df))
   if (length(missing_cols) > 0) {
     stop(
@@ -78,15 +71,20 @@ validate_integrations <- function(x) {
 
   df$host_chr <- trimws(gsub("(?i)^chr", "", as.character(df$host_chr)))
   df$host_pos <- suppressWarnings(as.numeric(df$host_pos))
+  df$host_strand <- normalize_integration_strand(df$host_strand)
+  df$virus_chr <- trimws(gsub("(?i)^chr", "", as.character(df$virus_chr)))
   df$virus_pos <- suppressWarnings(as.numeric(df$virus_pos))
-  df$sample <- as.character(df$sample)
-  df$support <- suppressWarnings(as.numeric(df$support))
-  df$virus_strand <- as.character(df$virus_strand)
-  df$method <- as.character(df$method)
+  df$virus_strand <- normalize_integration_strand(df$virus_strand)
+  df$support_reads <- suppressWarnings(as.numeric(df$support_reads))
+  if ("sample" %in% colnames(df)) {
+    df$sample <- as.character(df$sample)
+  }
 
   keep <- !is.na(df$host_chr) & nzchar(df$host_chr) &
-    !is.na(df$host_pos) & !is.na(df$virus_pos) &
-    !is.na(df$sample) & nzchar(df$sample)
+    !is.na(df$host_pos) &
+    !is.na(df$virus_chr) & nzchar(df$virus_chr) &
+    !is.na(df$virus_pos) &
+    !is.na(df$support_reads)
 
   if (!all(keep)) {
     warning(sum(!keep), " rows were dropped because they were incomplete or invalid.")
@@ -101,6 +99,12 @@ validate_integrations <- function(x) {
   rownames(df) <- NULL
   class(df) <- c("vi_integrations", "data.frame")
   df
+}
+
+normalize_integration_strand <- function(x) {
+  x <- trimws(as.character(x))
+  x[!x %in% c("+", "-", "*")] <- "*"
+  x
 }
 
 #' Print integration records
@@ -125,20 +129,44 @@ integration_plot_df <- function(integrations, virus_name) {
     end2 = df$virus_pos,
     host_chr = df$host_chr,
     host_pos = df$host_pos,
-    virus_chr = rep(virus_name, nrow(df)),
+    host_strand = df$host_strand,
+    virus_chr = df$virus_chr,
     virus_pos = df$virus_pos,
-    sample = df$sample,
-    support = df$support,
+    support_reads = df$support_reads,
     virus_strand = df$virus_strand,
-    method = df$method,
-    Label = df$sample,
-    Depth = df$support,
-    Source = df$method,
+    Depth = df$support_reads,
     ViralStrand = df$virus_strand,
     stringsAsFactors = FALSE
   )
 
+  extra_cols <- setdiff(colnames(df), colnames(out))
+  if (length(extra_cols) > 0L) {
+    out[extra_cols] <- df[extra_cols]
+  }
+
   out
+}
+
+validate_integration_virus_name <- function(integrations, virus_name) {
+  df <- as.data.frame(integrations, stringsAsFactors = FALSE)
+  virus_chr <- unique(as.character(df$virus_chr))
+  virus_chr <- virus_chr[!is.na(virus_chr) & nzchar(virus_chr)]
+
+  if (length(virus_chr) == 0L) {
+    stop("Integration data must contain a non-empty virus_chr value.", call. = FALSE)
+  }
+
+  if (length(virus_chr) != 1L || !identical(virus_chr, virus_name)) {
+    stop(
+      "Integration data virus_chr must match virus_name ",
+      virus_name,
+      ". Found: ",
+      paste(virus_chr, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  invisible(TRUE)
 }
 
 split_named_filters <- function(df, subset = NULL) {
@@ -195,14 +223,14 @@ track_ideogram <- function(height = 0.08, grid_col = NULL, border_col = "white",
 #' @param point_color Default point color when no mapping is provided.
 #' @param baseline_col Baseline color.
 #' @param subset Optional named list of filters.
-#' @param method_col Optional named vector of colors for explicit mapping.
+#' @param color_map Optional named vector of colors for explicit mapping.
 #' @return A track object for \code{plot_integrations()}.
 #' @export
 track_sites <- function(height = 0.15, split_by = NULL, color = NULL,
-                        size = "support", label = NULL,
+                        size = "support_reads", label = NULL,
                         label_cex = 0.8, label_col = "grey30",
                         point_color = "blue", baseline_col = "grey90",
-                        subset = NULL, method_col = NULL) {
+                        subset = NULL, color_map = NULL) {
   structure(
     list(
       type = "sites",
@@ -216,7 +244,7 @@ track_sites <- function(height = 0.15, split_by = NULL, color = NULL,
       point_color = point_color,
       baseline_col = baseline_col,
       subset = subset,
-      method_col = method_col
+      color_map = color_map
     ),
     class = "vi_track"
   )
@@ -315,11 +343,11 @@ track_virus_density <- function(height = 0.12, bins = 50, fill = "#4D4D4D",
 #' @param lwd Link width.
 #' @param default_col Default link color.
 #' @param subset Optional named list of filters.
-#' @param method_col Optional named vector of colors for explicit mapping.
+#' @param color_map Optional named vector of colors for explicit mapping.
 #' @return A track object for \code{plot_integrations()}.
 #' @export
 track_links <- function(color = NULL, radius = NULL, lwd = 0.35,
-                        default_col = "grey", subset = NULL, method_col = NULL) {
+                        default_col = "grey", subset = NULL, color_map = NULL) {
   structure(
     list(
       type = "links",
@@ -328,7 +356,7 @@ track_links <- function(color = NULL, radius = NULL, lwd = 0.35,
       lwd = lwd,
       default_col = default_col,
       subset = subset,
-      method_col = method_col
+      color_map = color_map
     ),
     class = "vi_track"
   )
@@ -390,19 +418,19 @@ draw_integration_track <- function(track, plot_df, cfg) {
 
   if (track$type == "sites") {
     if (!is.null(track$color) && length(track$color) == 1L && track$color %in% colnames(data)) {
-      data$Source <- as.character(data[[track$color]])
-      track_method_col <- NULL
+      data$.color_group <- as.character(data[[track$color]])
+      track_color_map <- NULL
       point_color <- track$point_color
     } else if (!is.null(track$color)) {
-      data$Source <- rep("integration", nrow(data))
-      track_method_col <- if (!is.null(track$method_col)) {
-        track$method_col
+      data$.color_group <- rep("integration", nrow(data))
+      track_color_map <- if (!is.null(track$color_map)) {
+        track$color_map
       } else {
         stats::setNames(track$color, "integration")
       }
       point_color <- track$point_color
     } else {
-      track_method_col <- track$method_col
+      track_color_map <- track$color_map
       point_color <- track$point_color
     }
 
@@ -421,7 +449,7 @@ draw_integration_track <- function(track, plot_df, cfg) {
       track_label = track$label,
       track_label_cex = track$label_cex,
       track_label_col = track$label_col,
-      method_col = track_method_col,
+      color_map = track_color_map,
       point_color = point_color,
       baseline_col = track$baseline_col
     ))
@@ -467,19 +495,19 @@ draw_integration_track <- function(track, plot_df, cfg) {
 
   if (track$type == "links") {
     if (!is.null(track$color) && length(track$color) == 1L && track$color %in% colnames(data)) {
-      data$Source <- as.character(data[[track$color]])
-      link_method_col <- NULL
+      data$.color_group <- as.character(data[[track$color]])
+      link_color_map <- NULL
       default_col <- track$default_col
     } else if (!is.null(track$color)) {
-      data$Source <- rep("integration", nrow(data))
-      link_method_col <- if (!is.null(track$method_col)) {
-        track$method_col
+      data$.color_group <- rep("integration", nrow(data))
+      link_color_map <- if (!is.null(track$color_map)) {
+        track$color_map
       } else {
         stats::setNames(track$color, "integration")
       }
       default_col <- track$default_col
     } else {
-      link_method_col <- track$method_col
+      link_color_map <- track$color_map
       default_col <- track$default_col
     }
 
@@ -488,7 +516,7 @@ draw_integration_track <- function(track, plot_df, cfg) {
       cfg = cfg,
       radius = track$radius,
       lwd = track$lwd,
-      method_col = link_method_col,
+      color_map = link_color_map,
       default_col = default_col
     ))
   }
@@ -508,6 +536,9 @@ draw_integration_track <- function(track, plot_df, cfg) {
 #' @param visual_ratio Visual proportion assigned to the virus sector.
 #' @param clear Logical. Whether to clear the current circlize device first.
 #' @param draw Logical. Whether to draw the plot immediately.
+#' @details The input table must describe the same virus sequence as `virus`.
+#'   A mismatch between `virus_chr` and the plotting virus name is treated as an
+#'   error.
 #' @return An object of class \code{vi_integration_plot}.
 #' @export
 plot_integrations <- function(integrations, host = "hg38", virus,
@@ -533,6 +564,7 @@ plot_integrations <- function(integrations, host = "hg38", virus,
   )
   cfg$grid_col <- host_obj$colors
 
+  validate_integration_virus_name(integrations, virus_obj$name)
   plot_df <- integration_plot_df(integrations, virus_name = virus_obj$name)
   if (is.null(tracks)) {
     tracks <- list(
@@ -612,23 +644,23 @@ draw_integration_plot <- function(x, clear = TRUE) {
     draw_integration_track(track, x$plot_df, x$cfg)
   }
 
-  legend_spec <- integration_method_legend_spec(x$tracks, x$plot_df)
+  legend_spec <- integration_group_legend_spec(x$tracks, x$plot_df)
   if (!is.null(legend_spec)) {
-    draw_method_legend(legend_spec)
+    draw_group_legend(legend_spec)
   }
 
   x$drawn <- TRUE
   invisible(x)
 }
 
-integration_method_legend_spec <- function(tracks, plot_df) {
+integration_group_legend_spec <- function(tracks, plot_df) {
   for (track in tracks) {
     if (track$type %in% c("sites", "links") &&
         is.character(track$color) &&
         length(track$color) == 1L &&
         track$color %in% colnames(plot_df)) {
-      method_col <- if (!is.null(track$method_col)) track$method_col else NULL
-      return(resolve_method_colors(plot_df[[track$color]], method_col = method_col))
+      color_map <- if (!is.null(track$color_map)) track$color_map else NULL
+      return(resolve_group_colors(plot_df[[track$color]], color_map = color_map))
     }
   }
 
@@ -657,7 +689,7 @@ legacy_layout_to_tracks <- function(layout_list) {
         point_color = if (is.null(task$point_color)) "blue" else task$point_color,
         baseline_col = if (is.null(task$baseline_col)) "grey90" else task$baseline_col,
         subset = if (is.null(task$sample_label)) NULL else stats::setNames(list(task$sample_label), "sample"),
-        method_col = task$method_col
+        color_map = task$color_map
       )
     } else if (task$type == "histogram") {
       out[[length(out) + 1L]] <- track_density(
@@ -674,7 +706,7 @@ legacy_layout_to_tracks <- function(layout_list) {
         radius = task$radius,
         lwd = if (is.null(task$lwd)) 0.35 else task$lwd,
         default_col = if (is.null(task$default_col)) "grey" else task$default_col,
-        method_col = task$method_col
+        color_map = task$color_map
       )
     }
   }

@@ -1,15 +1,16 @@
 #' Plot cohort-level integration summaries
 #'
 #' Compare integration burden or supporting-read burden across samples, cohorts,
-#' methods, or any other column in the integration table. A second column can be
-#' used to show stacked composition within each group.
+#' or any other user-supplied column in the integration table. When `group_by`
+#' is `NULL`, all events are combined into one overall group. A second column
+#' can be used to show stacked composition within each group.
 #'
 #' @param integrations Integration records accepted by [as_integrations()].
 #' @param group_by Column used for the main comparison groups.
 #' @param fill_by Optional column used for stacked composition within each
 #'   group.
 #' @param measure Quantity to summarize: number of integration events
-#'   (`"events"`) or total supporting reads (`"support"`).
+#'   (`"events"`) or total supporting reads (`"support_reads"`).
 #' @param normalize Logical. If `TRUE`, show within-group proportions instead
 #'   of raw totals.
 #' @param top_n Optional number of `fill_by` categories to keep. Remaining
@@ -18,16 +19,16 @@
 #'   for specific `fill_by` values.
 #' @return A `ggplot` object.
 #' @export
-plot_cohort_comparison <- function(integrations, group_by = "sample",
-                                   fill_by = "method",
-                                   measure = c("events", "support"),
+plot_cohort_comparison <- function(integrations, group_by = NULL,
+                                   fill_by = NULL,
+                                   measure = c("events", "support_reads"),
                                    normalize = FALSE,
                                    top_n = NULL,
                                    colors = NULL) {
   measure <- match.arg(measure)
   integrations <- as.data.frame(as_integrations(integrations), stringsAsFactors = FALSE)
 
-  validate_single_column_arg(group_by, integrations, "group_by", allow_null = FALSE)
+  validate_single_column_arg(group_by, integrations, "group_by", allow_null = TRUE)
   validate_single_column_arg(fill_by, integrations, "fill_by", allow_null = TRUE)
   if (!is.logical(normalize) || length(normalize) != 1L || is.na(normalize)) {
     stop("normalize must be TRUE or FALSE.", call. = FALSE)
@@ -72,8 +73,6 @@ plot_cohort_comparison <- function(integrations, group_by = "sample",
     fill_levels <- levels(plot_data$fill)
     fill_colors <- if (!is.null(colors)) {
       normalize_named_colors(colors, fill_levels)
-    } else if (identical(fill_by, "method")) {
-      resolve_method_colors(fill_levels)
     } else {
       normalize_named_colors(grDevices::hcl.colors(length(fill_levels), "Dark 3"), fill_levels)
     }
@@ -85,7 +84,10 @@ plot_cohort_comparison <- function(integrations, group_by = "sample",
   }
 
   p +
-    ggplot2::labs(x = group_by, y = y_label) +
+    ggplot2::labs(
+      x = if (is.null(group_by)) "All integrations" else group_by,
+      y = y_label
+    ) +
     ggplot2::theme_minimal(base_size = 11) +
     ggplot2::theme(
       panel.grid.major.x = ggplot2::element_blank(),
@@ -97,9 +99,14 @@ plot_cohort_comparison <- function(integrations, group_by = "sample",
 prepare_cohort_summary <- function(integrations, group_by, fill_by, measure,
                                    normalize, top_n) {
   df <- integrations
-  df$.group <- as.character(df[[group_by]])
-  df$.group[is.na(df$.group) | !nzchar(df$.group)] <- "Missing"
-  group_levels <- unique(df$.group)
+  if (is.null(group_by)) {
+    df$.group <- "All integrations"
+    group_levels <- "All integrations"
+  } else {
+    df$.group <- as.character(df[[group_by]])
+    df$.group[is.na(df$.group) | !nzchar(df$.group)] <- "Missing"
+    group_levels <- unique(df$.group)
+  }
 
   if (is.null(fill_by)) {
     df$.fill <- "integration"
@@ -113,7 +120,7 @@ prepare_cohort_summary <- function(integrations, group_by, fill_by, measure,
   df$.value <- if (measure == "events") {
     1
   } else {
-    suppressWarnings(as.numeric(df$support))
+    suppressWarnings(as.numeric(df$support_reads))
   }
   df <- df[!is.na(df$.value), , drop = FALSE]
   if (nrow(df) == 0L) {

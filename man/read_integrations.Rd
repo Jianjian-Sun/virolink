@@ -17,3 +17,9 @@ A \code{vi_integrations} object.
 \description{
 Read integration records
 }
+\details{
+The table must contain the exact standard columns \code{host_chr},
+\code{host_pos}, \code{host_strand}, \code{virus_chr}, \code{virus_pos},
+\code{virus_strand}, and \code{support_reads}. \code{sample} and other metadata
+columns are optional and are preserved when supplied.
+}

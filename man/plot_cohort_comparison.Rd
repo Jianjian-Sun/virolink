@@ -6,9 +6,9 @@
 \usage{
 plot_cohort_comparison(
   integrations,
-  group_by = "sample",
-  fill_by = "method",
-  measure = c("events", "support"),
+  group_by = NULL,
+  fill_by = NULL,
+  measure = c("events", "support_reads"),
   normalize = FALSE,
   top_n = NULL,
   colors = NULL
@@ -17,13 +17,13 @@ plot_cohort_comparison(
 \arguments{
 \item{integrations}{Integration records accepted by \code{\link[=as_integrations]{as_integrations()}}.}
 
-\item{group_by}{Column used for the main comparison groups.}
+\item{group_by}{Column used for the main comparison groups. If \code{NULL}, all events are combined into one overall group.}
 
 \item{fill_by}{Optional column used for stacked composition within each
 group.}
 
 \item{measure}{Quantity to summarize: number of integration events
-(\code{"events"}) or total supporting reads (\code{"support"}).}
+(\code{"events"}) or total supporting reads (\code{"support_reads"}).}
 
 \item{normalize}{Logical. If \code{TRUE}, show within-group proportions instead
 of raw totals.}
@@ -39,6 +39,7 @@ A \code{ggplot} object.
 }
 \description{
 Compare integration burden or supporting-read burden across samples, cohorts,
-methods, or any other column in the integration table. A second column can be
-used to show stacked composition within each group.
+or any other user-supplied column in the integration table. When \code{group_by}
+is \code{NULL}, all events are combined into one overall group. A second column
+can be used to show stacked composition within each group.
 }

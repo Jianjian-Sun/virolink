@@ -17,11 +17,13 @@ test_that("locus context plots integrations and annotations", {
   integrations <- data.frame(
     host_chr = c("chr2", "chr2", "chr2", "chr3"),
     host_pos = c(1000, 1300, 9000, 1100),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 30, 40),
-    support = c(5, 10, 8, 2),
+    support_reads = c(5, 10, 8, 2),
     sample = c("A", "B", "C", "D"),
     virus_strand = c("+", "-", "+", "-"),
-    method = c("DNA", "RNA", "DNA", "RNA")
+    library_type = c("DNA", "RNA", "DNA", "RNA")
   )
   annotations <- host_features(
     chr = c("2", "2"),
@@ -37,8 +39,8 @@ test_that("locus context plots integrations and annotations", {
     pos = 1200,
     window = 800,
     annotations = annotations,
-    group_by = "method",
-    size_by = "support"
+    group_by = "library_type",
+    size_by = "support_reads"
   )
 
   expect_s3_class(p, "ggplot")
@@ -67,11 +69,13 @@ test_that("locus context can hide the host feature type legend", {
   integrations <- data.frame(
     host_chr = c("chr2", "chr2"),
     host_pos = c(1000, 1300),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20),
-    support = c(5, 10),
+    support_reads = c(5, 10),
     sample = c("A", "B"),
     virus_strand = c("+", "-"),
-    method = c("DNA", "RNA")
+    library_type = c("DNA", "RNA")
   )
   annotations <- host_features(
     chr = "2",
@@ -103,11 +107,13 @@ test_that("locus context works without annotations", {
   integrations <- data.frame(
     host_chr = c("2", "2"),
     host_pos = c(1000, 1300),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20),
-    support = c(5, 10),
+    support_reads = c(5, 10),
     sample = c("A", "B"),
     virus_strand = c("+", "-"),
-    method = c("DNA", "RNA")
+    library_type = c("DNA", "RNA")
   )
 
   p <- plot_locus_context(
@@ -126,11 +132,13 @@ test_that("locus context validates inputs", {
   integrations <- data.frame(
     host_chr = "2",
     host_pos = 1000,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
 
   expect_error(
@@ -142,7 +150,7 @@ test_that("locus context validates inputs", {
     "Unknown group_by column"
   )
   expect_error(
-    plot_locus_context(integrations, chr = "2", pos = 1000, size_by = "method"),
+    plot_locus_context(integrations, chr = "2", pos = 1000, size_by = "library_type"),
     "size_by must refer to a numeric column"
   )
   expect_error(

@@ -15,3 +15,9 @@ A standardized \code{vi_integrations} object.
 \description{
 Validate integration records
 }
+\details{
+The required columns are \code{host_chr}, \code{host_pos}, \code{host_strand},
+\code{virus_chr}, \code{virus_pos}, \code{virus_strand}, and
+\code{support_reads}. Legacy alias-only inputs are not accepted by this
+development schema.
+}

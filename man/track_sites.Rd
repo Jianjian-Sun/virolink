@@ -8,14 +8,14 @@ track_sites(
   height = 0.15,
   split_by = NULL,
   color = NULL,
-  size = "support",
+  size = "support_reads",
   label = NULL,
   label_cex = 0.8,
   label_col = "grey30",
   point_color = "blue",
   baseline_col = "grey90",
   subset = NULL,
-  method_col = NULL
+  color_map = NULL
 )
 }
 \arguments{
@@ -39,7 +39,7 @@ track_sites(
 
 \item{subset}{Optional named list of filters.}
 
-\item{method_col}{Optional named vector of colors for explicit mapping.}
+\item{color_map}{Optional named vector of colors for explicit mapping.}
 }
 \value{
 A track object for \code{plot_integrations()}.

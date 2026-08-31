@@ -11,7 +11,7 @@ draw_scatter(
   track_label = NULL,
   track_label_cex = 0.8,
   track_label_col = "grey30",
-  method_col = NULL,
+  color_map = NULL,
   point_color = "blue",
   baseline_col = "grey90"
 )
@@ -29,7 +29,7 @@ draw_scatter(
 
 \item{track_label_col}{Track label color.}
 
-\item{method_col}{Optional named vector of colors for different methods.}
+\item{color_map}{Optional named vector of colors for different groups.}
 
 \item{point_color}{Default point color.}
 

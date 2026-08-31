@@ -2,11 +2,13 @@ test_that("integration signature plots candidate clonality clusters", {
   integrations <- data.frame(
     host_chr = c("1", "1", "1", "2"),
     host_pos = c(1000, 1100, 10000, 500),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 30, 40),
-    support = c(5, 10, 8, 2),
+    support_reads = c(5, 10, 8, 2),
     sample = c("A", "B", "A", "B"),
     virus_strand = c("+", "-", "+", "-"),
-    method = c("DNA", "RNA", "DNA", "RNA")
+    library_type = c("DNA", "RNA", "DNA", "RNA")
   )
 
   p <- plot_integration_signature(
@@ -27,11 +29,13 @@ test_that("host-virus clustering can split host-near virus-distant records", {
   integrations <- data.frame(
     host_chr = c("1", "1"),
     host_pos = c(1000, 1100),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 5000),
-    support = c(5, 10),
+    support_reads = c(5, 10),
     sample = c("A", "A"),
     virus_strand = c("+", "-"),
-    method = c("DNA", "RNA")
+    library_type = c("DNA", "RNA")
   )
 
   host_only <- plot_integration_signature(
@@ -57,18 +61,20 @@ test_that("integration signature plots strand orientation", {
   integrations <- data.frame(
     host_chr = c("1", "1", "2"),
     host_pos = c(100, 200, 300),
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = c(10, 20, 30),
-    support = c(5, 10, 8),
+    support_reads = c(5, 10, 8),
     sample = c("A", "A", "B"),
     virus_strand = c("+", "-", "+"),
-    method = c("DNA", "RNA", "DNA")
+    library_type = c("DNA", "RNA", "DNA")
   )
 
   p <- plot_integration_signature(
     integrations,
     mode = "strand",
     group_by = "sample",
-    measure = "support"
+    measure = "support_reads"
   )
 
   expect_s3_class(p, "ggplot")
@@ -80,11 +86,13 @@ test_that("integration signature validates inputs", {
   integrations <- data.frame(
     host_chr = "1",
     host_pos = 100,
+    host_strand = "*",
+    virus_chr = "HBV",
     virus_pos = 10,
-    support = 5,
+    support_reads = 5,
     sample = "A",
     virus_strand = "+",
-    method = "DNA"
+    library_type = "DNA"
   )
 
   expect_error(

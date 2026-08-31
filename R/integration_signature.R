@@ -17,7 +17,7 @@
 #' @param cluster_window Distance in base pairs used to group nearby
 #'   breakpoints.
 #' @param measure Quantity to summarize: number of integration events
-#'   (`"events"`) or total supporting reads (`"support"`).
+#'   (`"events"`) or total supporting reads (`"support_reads"`).
 #' @param top_n Number of candidate clusters shown in `mode = "clonality"`.
 #' @param colors Optional fill colors. A named vector can be used to set colors
 #'   for specific groups.
@@ -25,10 +25,10 @@
 #' @export
 plot_integration_signature <- function(integrations,
                                        mode = c("clonality", "strand"),
-                                       group_by = "sample",
+                                       group_by = NULL,
                                        cluster_by = c("host", "host_virus"),
                                        cluster_window = 1000,
-                                       measure = c("support", "events"),
+                                       measure = c("support_reads", "events"),
                                        top_n = 10,
                                        colors = NULL) {
   mode <- match.arg(mode)
@@ -55,7 +55,7 @@ plot_integration_signature <- function(integrations,
       measure = measure,
       top_n = top_n
     )
-    y_label <- if (measure == "support") "Supporting reads" else "Integration events"
+    y_label <- if (measure == "support_reads") "Supporting reads" else "Integration events"
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$cluster, y = .data$value))
     if (is.null(group_by)) {
       p <- p +
@@ -85,7 +85,7 @@ plot_integration_signature <- function(integrations,
     group_by = group_by,
     measure = measure
   )
-  y_label <- if (measure == "support") "Supporting reads" else "Integration events"
+  y_label <- if (measure == "support_reads") "Supporting reads" else "Integration events"
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$strand, y = .data$value))
   if (is.null(group_by)) {
     p <- p +
@@ -265,7 +265,7 @@ signature_measure_values <- function(df, measure) {
   if (measure == "events") {
     return(rep(1, nrow(df)))
   }
-  suppressWarnings(as.numeric(df$support))
+  suppressWarnings(as.numeric(df$support_reads))
 }
 
 signature_fill_colors <- function(groups, colors = NULL) {
