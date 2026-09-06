@@ -8,7 +8,7 @@ read_caller_integrations(
   path,
   format = c("auto", "ctat_vif", "virusfinder2", "virus_clip", "bsvf"),
   sample = NULL,
-  sep = "\t",
+  sep = "\\t",
   ...
 )
 }

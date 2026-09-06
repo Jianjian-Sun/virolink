@@ -4,7 +4,7 @@
 \alias{read_virus_clip_integrations}
 \title{Read Virus-Clip integration sites}
 \usage{
-read_virus_clip_integrations(path, sample = NULL, sep = "\t", ...)
+read_virus_clip_integrations(path, sample = NULL, sep = "\\t", ...)
 }
 \arguments{
 \item{path}{Path to a Virus-Clip output file.}

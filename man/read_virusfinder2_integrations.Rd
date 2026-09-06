@@ -4,7 +4,7 @@
 \alias{read_virusfinder2_integrations}
 \title{Read VirusFinder2 integration sites}
 \usage{
-read_virusfinder2_integrations(path, sample = NULL, sep = "\t", ...)
+read_virusfinder2_integrations(path, sample = NULL, sep = "\\t", ...)
 }
 \arguments{
 \item{path}{Path to a VirusFinder2 integration-sites file.}

@@ -4,7 +4,7 @@
 \alias{read_ctat_vif_integrations}
 \title{Read CTAT-VIF integration candidates}
 \usage{
-read_ctat_vif_integrations(path, sample = NULL, sep = "\t", ...)
+read_ctat_vif_integrations(path, sample = NULL, sep = "\\t", ...)
 }
 \arguments{
 \item{path}{Path to a CTAT-VIF \code{insertion_candidates.tsv} file.}
@@ -20,13 +20,9 @@ and no label is inferred from the file name or path.}
 A \code{vi_integrations} object.
 }
 \description{
-Read CTAT-VIF integration candidates
-}
-\details{
-CTAT-VIF columns are mapped as follows: \code{chrA}/\code{coordA} and
-\code{chrB}/\code{coordB} are used to identify host and virus breakpoints,
-\code{total} is used as the standard \code{support_reads} value, \code{contig} is
-retained as \code{raw_record_id}, \code{prelim.primary_brkpt_type} as
-\code{breakpoint_type}, and \code{prelim.total}, \code{split}, \code{span},
-and \code{total} are retained as caller-specific support-read fields.
+CTAT-VIF columns are mapped as follows: \code{chrA}/\code{coordA} and \code{chrB}/\code{coordB}
+are used to identify host and virus breakpoints, \code{total} is used as the
+standard \code{support_reads} value, \code{contig} is retained as \code{raw_record_id},
+\code{prelim.primary_brkpt_type} as \code{breakpoint_type}, and \code{prelim.total},
+\code{split}, \code{span}, and \code{total} are retained as caller-specific support fields.
 }

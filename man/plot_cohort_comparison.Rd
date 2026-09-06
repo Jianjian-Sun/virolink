@@ -17,7 +17,7 @@ plot_cohort_comparison(
 \arguments{
 \item{integrations}{Integration records accepted by \code{\link[=as_integrations]{as_integrations()}}.}
 
-\item{group_by}{Column used for the main comparison groups. If \code{NULL}, all events are combined into one overall group.}
+\item{group_by}{Column used for the main comparison groups.}
 
 \item{fill_by}{Optional column used for stacked composition within each
 group.}

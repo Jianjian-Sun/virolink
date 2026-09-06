@@ -4,7 +4,7 @@
 \alias{read_bsvf_integrations}
 \title{Read BSVF integration sites}
 \usage{
-read_bsvf_integrations(path, sample = NULL, sep = "\t", ...)
+read_bsvf_integrations(path, sample = NULL, sep = "\\t", ...)
 }
 \arguments{
 \item{path}{Path to a BSVF output file.}
