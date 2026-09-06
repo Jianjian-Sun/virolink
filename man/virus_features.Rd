@@ -2,24 +2,36 @@
 % Please edit documentation in R/virus_features.R
 \name{virus_features}
 \alias{virus_features}
-\title{Create virus feature annotations}
+\title{Create or extract virus feature annotations}
 \usage{
-virus_features(x = NULL, feature = NULL, start = NULL, end = NULL, type = NULL)
+virus_features(
+  annotation = NULL,
+  type = NULL,
+  feature = NULL,
+  start = NULL,
+  end = NULL
+)
 }
 \arguments{
-\item{x}{A data frame with feature intervals, or \code{NULL} when columns are supplied separately.}
+\item{annotation}{A list returned by \code{\link[=virus_info]{virus_info()}}, a data frame with feature
+intervals, or \code{NULL} when columns are supplied separately.}
 
-\item{feature}{Feature names.}
+\item{type}{Optional GFF3 feature type filter for \code{\link[=virus_info]{virus_info()}} results, or
+optional feature type labels when columns are supplied directly.}
 
-\item{start}{Feature start positions on the virus genome.}
+\item{feature}{Optional feature name filter for \code{\link[=virus_info]{virus_info()}} results, or
+feature names when columns are supplied directly.}
 
-\item{end}{Feature end positions on the virus genome.}
+\item{start}{Feature start positions when columns are supplied directly.}
 
-\item{type}{Optional feature type labels.}
+\item{end}{Feature end positions when columns are supplied directly.}
 }
 \value{
 A \code{vi_virus_features} object.
 }
 \description{
-Create virus feature annotations
+When \code{annotation} is a result from \code{\link[=virus_info]{virus_info()}}, this parses the downloaded
+GFF3 and returns selected feature records for plotting. When \code{annotation} is a
+data frame, or when \code{feature}, \code{start}, and \code{end} are supplied directly, this
+standardizes those records into the same \code{vi_virus_features} object.
 }
