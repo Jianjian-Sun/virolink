@@ -32,41 +32,22 @@ validate_virus_info <- function(virus_name, virus_length, host_chr) {
 #' @param visual_ratio Visual proportion assigned to the virus sector.
 #' @return A plotting configuration list.
 #' @keywords internal
-create_config <- function(host = NULL,
-                          chrom_file = NULL,
-                          virus_name,
-                          virus_length,
-                          visual_ratio = 0.1) {
-  host_df <- resolve_host_chrom_sizes(host = host, chrom_file = chrom_file)
-  virus_info <- validate_virus_info(virus_name, virus_length, host_df$chr)
-  virus_name <- virus_info$virus_name
-  virus_length <- virus_info$virus_length
-
-  if (!is.numeric(visual_ratio) || length(visual_ratio) != 1 ||
-      is.na(visual_ratio) || visual_ratio <= 0 || visual_ratio >= 1) {
-    stop("visual_ratio must be a single number between 0 and 1.")
+create_config <- function(host, virus, visual_ratio = 0.1) {
+  if (!inherits(host, "vi_host_genome")) stop("host must be a vi_host_genome object.", call. = FALSE)
+  if (!inherits(virus, "vi_virus_genome")) stop("virus must be a vi_virus_genome object.", call. = FALSE)
+  if (!is.numeric(visual_ratio) || length(visual_ratio) != 1L || is.na(visual_ratio) || visual_ratio <= 0 || visual_ratio >= 1) {
+    stop("visual_ratio must be a single number between 0 and 1.", call. = FALSE)
   }
-
-  chrom_df <- rbind(
-    host_df,
-    data.frame(chr = virus_name, start = 0, end = virus_length, stringsAsFactors = FALSE)
-  )
-
-  widths <- numeric(nrow(chrom_df))
-  names(widths) <- chrom_df$chr
-  widths[virus_name] <- visual_ratio
-
-  host_mask <- chrom_df$chr != virus_name
+  host_df <- host$sequences
+  virus_info <- validate_virus_info(virus$name, virus$length, host_df$chr)
+  chrom_df <- rbind(host_df, virus$sequences)
+  widths <- numeric(nrow(chrom_df)); names(widths) <- chrom_df$chr
+  widths[virus_info$virus_name] <- visual_ratio
+  host_mask <- chrom_df$chr != virus_info$virus_name
   host_len <- chrom_df$end[host_mask] - chrom_df$start[host_mask]
   widths[host_mask] <- host_len / sum(host_len) * (1 - visual_ratio)
-
-  list(
-    data = chrom_df,
-    widths = widths,
-    virus_name = virus_name
-  )
+  list(data = chrom_df, widths = widths, virus_name = virus_info$virus_name)
 }
-
 #' Convert an Integration Table to GInteractions
 #'
 #' @param input_file Path to an integration table.

@@ -112,9 +112,7 @@ add_virus_circos_track <- function(x, track) {
 #' @param draw Logical. Whether to draw immediately.
 #' @return A \code{vi_virus_circos_plot} object.
 #' @export
-plot_virus_circos <- function(virus_length, virus_name = "virus",
-                              features = NULL, integrations = NULL,
-                              tracks = NULL, fill = NULL,
+plot_virus_circos <- function(virus, integrations = NULL, tracks = NULL, fill = NULL,
                               height = 0.12, label = TRUE,
                               label_cex = 0.55,
                               label_col = "grey20",
@@ -124,8 +122,12 @@ plot_virus_circos <- function(virus_length, virus_name = "virus",
                               track_margin = c(0.004, 0.004),
                               start.degree = 90, gap.degree = 0,
                               clear = TRUE, draw = TRUE) {
-  virus_length <- validate_virus_circos_length(virus_length)
-  virus_name <- validate_virus_circos_name(virus_name)
+  if (!inherits(virus, "vi_virus_genome")) {
+    stop("virus must be a vi_virus_genome object created by virus_genome().", call. = FALSE)
+  }
+  virus_length <- validate_virus_circos_length(virus$length)
+  virus_name <- validate_virus_circos_name(virus$name)
+  features <- virus$features
   track_margin <- validate_virus_circos_margin(track_margin)
   if (!is.logical(show_virus_name) || length(show_virus_name) != 1L ||
       is.na(show_virus_name)) {

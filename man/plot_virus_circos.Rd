@@ -5,9 +5,8 @@
 \title{Plot a virus genome with concentric circos tracks}
 \usage{
 plot_virus_circos(
-  virus_length,
-  virus_name = "virus",
-  features = NULL,
+  virus,
+  integrations = NULL,
   tracks = NULL,
   fill = NULL,
   height = 0.12,
@@ -25,11 +24,7 @@ plot_virus_circos(
 )
 }
 \arguments{
-\item{virus_length}{Virus genome length in base pairs.}
-
-\item{virus_name}{Virus sequence name used for the sector label.}
-
-\item{features}{Optional virus feature intervals.}
+\item{integrations}{Optional integration records used by virus read tracks.}
 
 \item{tracks}{Optional list of \code{vi_virus_circos_track} objects.}
 
@@ -63,6 +58,12 @@ of the circular plot.}
 \item{clear}{Logical. Whether to clear the current circlize device first.}
 
 \item{draw}{Logical. Whether to draw immediately.}
+
+\item{virus_length}{Virus genome length in base pairs.}
+
+\item{virus_name}{Virus sequence name used for the sector label.}
+
+\item{features}{Optional virus feature intervals.}
 }
 \value{
 A \code{vi_virus_circos_plot} object.
@@ -76,4 +77,8 @@ Overlapping feature groups are pushed to the next inner ring. Labels are
 centered in the colored blocks when the interval is wide enough, including
 across-origin centers for split circular features; short labels are omitted
 and reported with a warning.
+}
+\details{
+Virus read counts are prepared from \code{integrations} before drawing and
+then rendered as a single outer histogram track.
 }

@@ -2,18 +2,22 @@
 % Please edit documentation in R/host_chrom_utils.R
 \name{virus_genome}
 \alias{virus_genome}
-\title{Construct a virus genome table}
+\title{Construct a virus genome reference}
 \usage{
-virus_genome(name, length = NULL)
+virus_genome(name = NULL, length = NULL, features = NULL, accession = NULL)
 }
 \arguments{
-\item{name}{Virus sequence name, or a named numeric vector of length 1.}
+\item{name}{Optional plotting sequence name. It must match �irus_chr in integration records; defaults to the accession when omitted.}
 
-\item{length}{Virus sequence length in base pairs.}
+\item{length}{Virus genome length in base pairs.}
+
+\item{features}{Optional virus feature table or \code{vi_virus_features} object.}
+
+\item{accession}{Optional NCBI nucleotide accession used to retrieve features and recorded as reference provenance.}
 }
 \value{
-A virus genome object with class \code{vi_virus_genome}.
+A \code{vi_virus_genome} object.
 }
 \description{
-Construct a virus genome table
+Construct a virus genome reference
 }

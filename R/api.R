@@ -196,7 +196,7 @@ split_named_filters <- function(df, subset = NULL) {
 #' @export
 track_ideogram <- function(height = 0.08, grid_col = NULL, border_col = "white",
                            label_cex = 0.52, axis_label_cex = 0.25,
-                           axis = c("virus", "all", "none")) {
+                           axis = c("all", "virus", "none")) {
   axis <- match.arg(axis)
   structure(
     list(
@@ -367,7 +367,7 @@ prepare_integration_tracks <- function(tracks, plot_df) {
 
   for (track in tracks) {
     if (!inherits(track, "vi_track")) {
-      stop("Each track must be created by track_ideogram(), track_sites(), track_density(), track_virus_genes(), track_virus_density(), or track_links().", call. = FALSE)
+      stop("Each track must be created by track_ideogram(), track_host_gene_density(), track_sites(), track_density(), track_virus_genes(), track_virus_density(), or track_links().", call. = FALSE)
     }
 
     if (!is.null(track$split_by)) {
@@ -455,6 +455,9 @@ draw_integration_track <- function(track, plot_df, cfg) {
     ))
   }
 
+  if (track$type == "host_gene_density") {
+    return(draw_host_gene_density(track = track, cfg = cfg))
+  }
   if (track$type == "density") {
     return(draw_histogram(
       data = data,
@@ -541,27 +544,18 @@ draw_integration_track <- function(track, plot_df, cfg) {
 #'   error.
 #' @return An object of class \code{vi_integration_plot}.
 #' @export
-plot_integrations <- function(integrations, host = "hg38", virus,
-                              tracks = NULL, visual_ratio = 0.1,
-                              clear = TRUE, chrom_file = NULL,
-                              draw = TRUE) {
+plot_integrations <- function(integrations, host, virus,
+                              tracks = NULL, visual_ratio = 0.1, clear = TRUE, draw = TRUE) {
   integrations <- as_integrations(integrations)
-  virus_obj <- if (inherits(virus, "vi_virus_genome")) {
-    virus
-  } else {
-    virus_genome(virus)
+  if (!inherits(host, "vi_host_genome")) {
+    stop("host must be a vi_host_genome object created by host_genome().", call. = FALSE)
   }
-  host_obj <- if (inherits(host, "vi_host_genome")) {
-    host
-  } else {
-    host_genome(host = host, chrom_file = chrom_file)
+  if (!inherits(virus, "vi_virus_genome")) {
+    stop("virus must be a vi_virus_genome object created by virus_genome().", call. = FALSE)
   }
-  cfg <- create_config(
-    host = host_obj,
-    virus_name = virus_obj$name,
-    virus_length = virus_obj$length,
-    visual_ratio = visual_ratio
-  )
+  host_obj <- host
+  virus_obj <- virus
+  cfg <- create_config(host = host_obj, virus = virus_obj, visual_ratio = visual_ratio)
   cfg$grid_col <- host_obj$colors
 
   validate_integration_virus_name(integrations, virus_obj$name)
@@ -574,7 +568,9 @@ plot_integrations <- function(integrations, host = "hg38", virus,
     )
   }
 
-  tracks <- prepare_integration_tracks(tracks, plot_df)
+  reference_tracks <- prepare_host_reference_tracks(tracks, host_obj)
+  host_obj <- reference_tracks$host
+  tracks <- prepare_integration_tracks(reference_tracks$tracks, plot_df)
 
   out <- structure(
     list(
@@ -818,3 +814,5 @@ visualize_viral_integration <- function(input_file,
 
   invisible(list(cfg = plot_obj$cfg, gi = gi, data = plot_obj$plot_df))
 }
+
+

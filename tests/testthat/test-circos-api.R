@@ -91,9 +91,8 @@ test_that("create_gi_from_table keeps strands and explicit metadata", {
   file <- tempfile(fileext = ".tsv")
   utils::write.table(integrations, file, sep = "\t", row.names = FALSE, quote = FALSE)
   cfg <- create_config(
-    host = data.frame(chr = "1", start = 0, end = 1000),
-    virus_name = "HBV",
-    virus_length = 50
+    host = host_genome(data.frame(chr = "1", start = 0, end = 1000)),
+    virus = virus_genome(name = "HBV", length = 50)
   )
 
   gi <- create_gi_from_table(file, cfg)
@@ -119,9 +118,8 @@ test_that("create_gi_from_table treats unknown host strand as plus for plotting"
   file <- tempfile(fileext = ".tsv")
   utils::write.table(integrations, file, sep = "\t", row.names = FALSE, quote = FALSE)
   cfg <- create_config(
-    host = data.frame(chr = "1", start = 0, end = 1000),
-    virus_name = "HBV",
-    virus_length = 50
+    host = host_genome(data.frame(chr = "1", start = 0, end = 1000)),
+    virus = virus_genome(name = "HBV", length = 50)
   )
 
   gi <- create_gi_from_table(file, cfg)
@@ -144,13 +142,25 @@ test_that("create_gi_from_table rejects a virus name mismatch", {
   file <- tempfile(fileext = ".tsv")
   utils::write.table(integrations, file, sep = "\t", row.names = FALSE, quote = FALSE)
   cfg <- create_config(
-    host = data.frame(chr = "1", start = 0, end = 1000),
-    virus_name = "HBV",
-    virus_length = 50
+    host = host_genome(data.frame(chr = "1", start = 0, end = 1000)),
+    virus = virus_genome(name = "HBV", length = 50)
   )
 
   expect_error(
     create_gi_from_table(file, cfg),
     "virus_chr.*HBV"
+  )
+})
+
+test_that("plot_integrations requires constructed host and virus genomes", {
+  integrations <- data.frame(
+    host_chr = "1", host_pos = 100, host_strand = "*",
+    virus_chr = "HBV", virus_pos = 10, virus_strand = "+", support_reads = 5
+  )
+
+  expect_error(
+    plot_integrations(integrations, host = data.frame(chr = "1", start = 0, end = 1000),
+                      virus = c(HBV = 1000), draw = FALSE),
+    "vi_host_genome"
   )
 })

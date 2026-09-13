@@ -10,7 +10,7 @@ track_ideogram(
   border_col = "white",
   label_cex = 0.52,
   axis_label_cex = 0.25,
-  axis = c("virus", "all", "none")
+  axis = c("all", "virus", "none")
 )
 }
 \arguments{

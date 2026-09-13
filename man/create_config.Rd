@@ -4,24 +4,18 @@
 \alias{create_config}
 \title{Create Plotting Configuration}
 \usage{
-create_config(
-  host = NULL,
-  chrom_file = NULL,
-  virus_name,
-  virus_length,
-  visual_ratio = 0.1
-)
+create_config(host, virus, visual_ratio = 0.1)
 }
 \arguments{
 \item{host}{Character scalar specifying a built-in host genome.}
+
+\item{visual_ratio}{Visual proportion assigned to the virus sector.}
 
 \item{chrom_file}{Optional path to a host chromosome-size table.}
 
 \item{virus_name}{Name of the virus sequence.}
 
 \item{virus_length}{Length of the virus sequence in base pairs.}
-
-\item{visual_ratio}{Visual proportion assigned to the virus sector.}
 }
 \value{
 A plotting configuration list.

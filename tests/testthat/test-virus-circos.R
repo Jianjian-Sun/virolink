@@ -150,8 +150,7 @@ test_that("plot_virus_circos uses readable compact defaults", {
   )
 
   p <- plot_virus_circos(
-    virus_length = 3215,
-    features = features,
+    virus = virus_genome(name = "virus", length = 3215, features = features),
     draw = FALSE
   )
 
@@ -176,9 +175,7 @@ test_that("virus read tracks use integrations passed to plot_virus_circos", {
   expect_false("label" %in% names(formals(track_virus_reads)))
 
   p <- plot_virus_circos(
-    virus_length = 3182,
-    virus_name = "HBV",
-    features = features,
+    virus = virus_genome(name = "HBV", length = 3182, features = features),
     integrations = integrations,
     tracks = list(track_virus_reads()),
     draw = FALSE
@@ -201,8 +198,7 @@ test_that("virus read tracks require integrations at plot time", {
 
   expect_error(
     plot_virus_circos(
-      virus_length = 1000,
-      features = features,
+      virus = virus_genome(name = "virus", length = 1000, features = features),
       tracks = list(track_virus_reads()),
       draw = FALSE
     ),
@@ -212,8 +208,7 @@ test_that("virus read tracks require integrations at plot time", {
 
 test_that("plot_virus_circos can omit the center virus name", {
   p <- plot_virus_circos(
-    virus_length = 3215,
-    virus_name = "HBV",
+    virus = virus_genome(name = "HBV", length = 3215),
     show_virus_name = FALSE,
     draw = FALSE
   )
@@ -232,8 +227,7 @@ test_that("plot_virus_circos returns a plot object and warns on short labels", {
 
   expect_warning(
     p <- plot_virus_circos(
-      virus_length = 200,
-      features = features,
+      virus = virus_genome(name = "virus", length = 200, features = features),
       draw = FALSE,
       label_min_width = 40
     ),
@@ -246,7 +240,7 @@ test_that("plot_virus_circos returns a plot object and warns on short labels", {
 
 test_that("plot_virus_circos validates virus_length", {
   expect_error(
-    plot_virus_circos(virus_length = 0, draw = FALSE),
+    plot_virus_circos(virus = structure(list(length = 0, name = "virus"), class = "vi_virus_genome"), draw = FALSE),
     "positive"
   )
 })
@@ -260,4 +254,18 @@ test_that("virus read tracks validate bins before drawing", {
     track_virus_reads(bins = NA),
     "bins must be a single positive integer"
   )
+})
+
+test_that("plot_virus_circos consumes a constructed virus genome", {
+  virus <- virus_genome(
+    name = "HBV", length = 3215,
+    features = virus_features(feature = "S", start = 1, end = 500)
+  )
+
+  p <- plot_virus_circos(virus = virus, draw = FALSE)
+
+  expect_s3_class(p, "vi_virus_circos_plot")
+  expect_identical(p$virus_name, "HBV")
+  expect_equal(p$virus_length, 3215)
+  expect_equal(p$tracks[[1]]$type, "genes")
 })

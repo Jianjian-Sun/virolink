@@ -2,21 +2,22 @@
 % Please edit documentation in R/host_chrom_utils.R
 \name{host_genome}
 \alias{host_genome}
-\title{Construct a host genome table}
+\title{Construct a host genome reference}
 \usage{
-host_genome(host = "hg38", chrom_file = NULL, colors = NULL)
+host_genome(sequences = "hg38", annotation = NULL, colors = NULL)
 }
 \arguments{
-\item{host}{Built-in host name, chromosome table, or \code{NULL} when
-\code{chrom_file} is supplied.}
+\item{sequences}{A UCSC assembly name, local \code{.fai}/TSV path, or data frame
+with \code{chr}, \code{start}, and \code{end} columns.}
 
-\item{chrom_file}{Optional path to a chromosome-size table.}
+\item{annotation}{Optional local host annotation path, retained as source
+metadata for annotation-dependent tracks.}
 
-\item{colors}{Optional named vector of chromosome colors.}
+\item{colors}{Optional named overrides for automatically generated sequence colors.}
 }
 \value{
-A host genome object with class \code{vi_host_genome}.
+A \code{vi_host_genome} object.
 }
 \description{
-Construct a host genome table
+Construct a host genome reference
 }
